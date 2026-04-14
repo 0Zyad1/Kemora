@@ -2,6 +2,7 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Kemora.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,13 +10,21 @@ namespace Kemora.Infrastructure.Services
 {
     public class CloudinaryImageService : IImageService
     {
-        private readonly Cloudinary _cloudinary;
+        private readonly Cloudinary? _cloudinary;
+        private readonly ILogger<CloudinaryImageService> _logger;
 
-        public CloudinaryImageService(IConfiguration config)
+        public CloudinaryImageService(IConfiguration config, ILogger<CloudinaryImageService> logger)
         {
-            var cloudName = config["Cloudinary:CloudName"] ?? throw new ArgumentNullException("Cloudinary:CloudName is missing from configuration");
-            var apiKey = config["Cloudinary:ApiKey"] ?? throw new ArgumentNullException("Cloudinary:ApiKey is missing from configuration");
-            var apiSecret = config["Cloudinary:ApiSecret"] ?? throw new ArgumentNullException("Cloudinary:ApiSecret is missing from configuration");
+            _logger = logger;
+            var cloudName = config["Cloudinary:CloudName"];
+            var apiKey = config["Cloudinary:ApiKey"];
+            var apiSecret = config["Cloudinary:ApiSecret"];
+
+            if (string.IsNullOrWhiteSpace(cloudName) || string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(apiSecret))
+            {
+                _logger.LogWarning("Cloudinary is not configured. Image uploads will be unavailable until Cloudinary settings are provided.");
+                return;
+            }
 
             var acc = new Account(cloudName, apiKey, apiSecret);
             _cloudinary = new Cloudinary(acc);
@@ -23,6 +32,11 @@ namespace Kemora.Infrastructure.Services
 
         public async Task<string?> UploadImageAsync(Stream fileStream, string fileName)
         {
+            if (_cloudinary == null)
+            {
+                return null;
+            }
+
             if (fileStream.Length > 0)
             {
                 var uploadParams = new ImageUploadParams

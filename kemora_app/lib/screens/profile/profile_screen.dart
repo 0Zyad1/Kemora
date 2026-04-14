@@ -6,6 +6,7 @@ import '../../services/mock_data_service.dart';
 import 'widgets/achievement_card.dart';
 import '../../presentation/viewmodels/auth_view_model.dart';
 import '../../presentation/screens/profile/settings_screen.dart';
+import '../../presentation/screens/auth/login_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -44,20 +45,24 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     child: ClipOval(
-                      child: (user?.profilePictureUrl != null && user!.profilePictureUrl!.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: user.profilePictureUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) => Container(
+                      child: (user?.profilePictureUrl != null &&
+                              user!.profilePictureUrl!.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: user.profilePictureUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.person,
+                                    size: 50, color: Colors.grey),
+                              ),
+                            )
+                          : Container(
                               color: Colors.grey[200],
-                              child: const Icon(Icons.person, size: 50, color: Colors.grey),
+                              child: const Icon(Icons.person,
+                                  size: 50, color: Colors.grey),
                             ),
-                          )
-                        : Container(
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.person, size: 50, color: Colors.grey),
-                          ),
                     ),
                   ),
                   Positioned(
@@ -69,7 +74,8 @@ class ProfileScreen extends StatelessWidget {
                         color: Colors.orange,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                      child: const Icon(Icons.camera_alt,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ],
@@ -189,7 +195,10 @@ class ProfileScreen extends StatelessWidget {
                   title: const Text('Account Settings'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()));
                   },
                 ),
               ),
@@ -203,9 +212,15 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    context.read<AuthViewModel>().logout();
+                  title:
+                      const Text('Logout', style: TextStyle(color: Colors.red)),
+                  onTap: () async {
+                    await context.read<AuthViewModel>().logout();
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
                   },
                 ),
               ),

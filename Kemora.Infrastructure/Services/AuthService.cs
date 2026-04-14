@@ -79,9 +79,17 @@ namespace Kemora.Infrastructure.Services
                 var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7210";
                 var confirmationLink = $"{baseUrl}/api/v1/auth/confirm-email-link?userId={user.Id}&token={Uri.EscapeDataString(emailToken)}";
-                
-                await _emailService.SendEmailAsync(user.Email!, "Welcome to Kemora - Confirm Your Email",
-                    GetHtmlVerificationEmail(user.FullName, confirmationLink));
+
+                try
+                {
+                    await _emailService.SendEmailAsync(user.Email!, "Welcome to Kemora - Confirm Your Email",
+                        GetHtmlVerificationEmail(user.FullName, confirmationLink));
+                }
+                catch
+                {
+                    // In local/dev setups SMTP may be intentionally unavailable.
+                    // Registration should still succeed so developers can continue testing.
+                }
 
                 var token = await _tokenService.CreateTokenAsync(user);
                 await transaction.CommitAsync();

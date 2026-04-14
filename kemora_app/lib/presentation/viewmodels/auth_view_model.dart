@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import '../../domain/entities/user.dart';
+import '../../data/models/user_model.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 import '../../domain/usecases/google_login_usecase.dart';
@@ -17,6 +21,10 @@ import 'package:image_picker/image_picker.dart';
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
 class AuthViewModel extends ChangeNotifier {
+  static const String _cachedUserKey = 'cached_user';
+  static const String _googleWebClientId =
+      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
   final GoogleLoginUseCase googleLoginUseCase;
@@ -26,8 +34,9 @@ class AuthViewModel extends ChangeNotifier {
   final UpdateProfileUseCase updateProfileUseCase;
   final UploadProfilePictureUseCase uploadProfilePictureUseCase;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
+  late final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: const ['email', 'profile'],
+    serverClientId: _googleWebClientId.isNotEmpty ? _googleWebClientId : null,
   );
 
   AuthViewModel({
@@ -39,7 +48,9 @@ class AuthViewModel extends ChangeNotifier {
     required this.changeEmailUseCase,
     required this.updateProfileUseCase,
     required this.uploadProfilePictureUseCase,
-  });
+  }) {
+    _restoreSession();
+  }
 
   AuthState _state = AuthState.initial;
   AuthState get state => _state;
@@ -50,6 +61,50 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  Future<void> _restoreSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedUserJson = prefs.getString(_cachedUserKey);
+
+      if (cachedUserJson != null && cachedUserJson.isNotEmpty) {
+        final decoded = jsonDecode(cachedUserJson) as Map<String, dynamic>;
+        _user = UserModel.fromJson(decoded);
+      }
+
+      _state = TokenStorage.instance.isAuthenticated
+          ? AuthState.authenticated
+          : AuthState.unauthenticated;
+    } catch (_) {
+      _state = TokenStorage.instance.isAuthenticated
+          ? AuthState.authenticated
+          : AuthState.unauthenticated;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _persistUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final payload = UserModel(
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      profilePictureUrl: user.profilePictureUrl,
+      country: user.country,
+      bio: user.bio,
+      token: user.token,
+      refreshToken: user.refreshToken,
+      earnedBadgesCount: user.earnedBadgesCount,
+      preferences: user.preferences,
+    ).toJson();
+    await prefs.setString(_cachedUserKey, jsonEncode(payload));
+  }
+
+  Future<void> _clearPersistedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_cachedUserKey);
+  }
+
   void _onAuthSuccess(User user) {
     _user = user;
     // Persist JWT token so Dio interceptor includes it in all subsequent requests
@@ -59,6 +114,7 @@ class AuthViewModel extends ChangeNotifier {
         refreshToken: user.refreshToken,
       );
     }
+    _persistUser(user);
     _state = AuthState.authenticated;
     notifyListeners();
   }
@@ -85,7 +141,8 @@ class AuthViewModel extends ChangeNotifier {
     // in web/index.html. Until it's set up, show a clear message.
     if (kIsWeb) {
       _state = AuthState.error;
-      _errorMessage = 'Google Sign-In is not yet configured for Web. Please use email/password login.';
+      _errorMessage =
+          'Google Sign-In is not yet configured for Web. Please use email/password login.';
       notifyListeners();
       return;
     }
@@ -102,7 +159,8 @@ class AuthViewModel extends ChangeNotifier {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
@@ -120,8 +178,25 @@ class AuthViewModel extends ChangeNotifier {
           _errorMessage = failure.message;
           notifyListeners();
         },
-        (user) => _onAuthSuccess(user),
+        (user) {
+          final googleName = (googleUser.displayName ?? '').trim();
+          final mergedUser = googleName.isNotEmpty
+              ? user.copyWith(fullName: googleName)
+              : user;
+          _onAuthSuccess(mergedUser);
+        },
       );
+    } on PlatformException catch (e) {
+      _state = AuthState.error;
+      if ((e.code == 'sign_in_failed' || e.code == '10') &&
+          (e.message?.contains('ApiException: 10') ?? false)) {
+        _errorMessage =
+            'Google Sign-In is not configured correctly for Android (ApiException 10).\n'
+            'Ensure OAuth Android client uses your app package and SHA-1, and pass GOOGLE_WEB_CLIENT_ID via --dart-define.';
+      } else {
+        _errorMessage = 'Google Sign-In Error: ${e.message ?? e.code}';
+      }
+      notifyListeners();
     } catch (e) {
       _state = AuthState.error;
       _errorMessage = 'Google Sign-In Error: ${e.toString()}';
@@ -150,7 +225,8 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> register(String fullName, String email, String country, String password) async {
+  Future<void> register(
+      String fullName, String email, String country, String password) async {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
@@ -167,7 +243,8 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(
+      String currentPassword, String newPassword) async {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
@@ -209,10 +286,11 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
-  void logout() {
+  Future<void> logout() async {
     _user = null;
     TokenStorage.instance.clearTokens();
-    _googleSignIn.signOut();
+    await _clearPersistedUser();
+    await _googleSignIn.signOut();
     _state = AuthState.unauthenticated;
     notifyListeners();
   }
@@ -247,7 +325,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> uploadProfilePicture() async {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
+
     if (image == null) return;
 
     _state = AuthState.loading;

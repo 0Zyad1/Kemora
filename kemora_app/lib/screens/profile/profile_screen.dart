@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/app_provider.dart';
 import '../../services/mock_data_service.dart';
@@ -27,7 +28,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 40),
             // User Header
             GestureDetector(
-              onTap: () => context.read<AuthViewModel>().uploadProfilePicture(),
+              onTap: () async {
+                final picker = ImagePicker();
+                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                if (image != null && context.mounted) {
+                  context.read<AuthViewModel>().uploadProfilePicture(image.path);
+                }
+              },
               child: Stack(
                 children: [
                   Container(
@@ -38,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           spreadRadius: 2,
                         ),

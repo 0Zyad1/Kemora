@@ -234,15 +234,17 @@ Future<void> init() async {
       },
     ));
 
-    // Logging interceptor for debugging
-    dio.interceptors.add(LogInterceptor(
-      request: true,
-      requestHeader: false,
-      requestBody: true,
-      responseHeader: false,
-      responseBody: true,
-      error: true,
-    ));
+    // Logging interceptor for debugging — only in debug mode to avoid leaking sensitive data
+    if (kDebugMode) {
+      dio.interceptors.add(LogInterceptor(
+        request: true,
+        requestHeader: false,
+        requestBody: true,
+        responseHeader: false,
+        responseBody: true,
+        error: true,
+      ));
+    }
 
     return dio;
   });

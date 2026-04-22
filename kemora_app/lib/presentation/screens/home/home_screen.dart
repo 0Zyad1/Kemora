@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../explore/places_screen.dart';
-import '../trip/trip_planner_screen.dart';
+import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/floating_nav_bar.dart';
+import 'home_content_screen.dart';
+import '../explore/governorates_map_screen.dart';
+import '../trip/trip_planner_entry_screen.dart';
 import '../social/feed_screen.dart';
-import '../badges/badges_screen.dart';
-import '../../../screens/profile/profile_screen.dart';
-import 'package:provider/provider.dart';
-import '../../viewmodels/auth_view_model.dart';
+import '../profile/public_profile_screen.dart';
+import '../search/global_search_screen.dart';
+import '../../../core/router/page_transitions.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,57 +18,76 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  List<Widget> _buildScreens() {
+    return [
+      HomeContentScreen(
+        onSwitchTab: (index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOutCubic,
+          );
+        },
+      ),
+      const GovernoratesMapScreen(),
+      const TripPlannerEntryScreen(),
+      const FeedScreen(),
+      const PublicProfileScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewModel>();
-    
-    // Fallback if user is null somehow, although it shouldn't happen if properly logged in
-    final userId = authViewModel.user?.id ?? '1';
-
-    final screens = [
-      const PlacesScreen(),
-      const TripPlannerScreen(),
-      const FeedScreen(),
-      BadgesScreen(userId: userId),
-      const ProfileScreen(),
-    ];
-
     return Scaffold(
-      body: screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Needed for > 3 items
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      extendBodyBehindAppBar: true,
+      appBar: KimoraAppBar(
+        onSearchTap: () {
+          Navigator.push(context, FadePageRoute(child: const GlobalSearchScreen()));
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore),
-            label: 'Explore',
+      ),
+      body: Stack(
+        children: [
+          // Content with PageView for swipe navigation
+          PageView(
+            controller: _pageController,
+            physics: const PageScrollPhysics(), // Snap to pages, avoid minor scroll conflict
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            children: _buildScreens(),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flight_takeoff_outlined),
-            activeIcon: Icon(Icons.flight_takeoff),
-            label: 'Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.feed_outlined),
-            activeIcon: Icon(Icons.feed),
-            label: 'Social',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.military_tech_outlined),
-            activeIcon: Icon(Icons.military_tech),
-            label: 'Badges',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
+          
+          // Floating Nav
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 24,
+            child: FloatingNavBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOutCubic,
+                );
+              },
+            ),
           ),
         ],
       ),

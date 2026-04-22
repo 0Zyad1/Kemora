@@ -55,11 +55,13 @@ class _EgyptMapScreenState extends State<EgyptMapScreen>
     final double halfSize = containerSize / 2;
 
     final matrix = Matrix4.identity()
-      ..translate(
+      ..translateByDouble(
         -halfSize * (zoomLevel - 1) - alignment.x * halfSize * zoomLevel,
         -halfSize * (zoomLevel - 1) - alignment.y * halfSize * zoomLevel,
+        0.0,
+        0.0,
       )
-      ..scale(zoomLevel);
+      ..scaleByDouble(zoomLevel, zoomLevel, 1.0, 1.0);
 
     _animation =
         Matrix4Tween(
@@ -118,7 +120,7 @@ class _EgyptMapScreenState extends State<EgyptMapScreen>
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -212,7 +214,7 @@ class _EgyptMapScreenState extends State<EgyptMapScreen>
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
                   ),
@@ -288,7 +290,7 @@ class _EgyptMapScreenState extends State<EgyptMapScreen>
                                       end: Alignment.bottomCenter,
                                       colors: [
                                         Colors.transparent,
-                                        Colors.black.withOpacity(0.7),
+                                        Colors.black.withValues(alpha: 0.7),
                                       ],
                                     ),
                                   ),

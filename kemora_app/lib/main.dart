@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/auth/token_storage.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/splash/splash_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
 import 'presentation/viewmodels/auth_view_model.dart';
 import 'presentation/viewmodels/badge_view_model.dart';
@@ -40,7 +40,7 @@ class AuthGate extends StatelessWidget {
         );
       case AuthState.unauthenticated:
       case AuthState.error:
-        return const LoginScreen();
+        return const SplashScreen();
     }
   }
 }

@@ -16,14 +16,11 @@ import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/upload_profile_picture_usecase.dart';
 import '../../domain/entities/user_preferences.dart';
 import '../../core/auth/token_storage.dart';
-import 'package:image_picker/image_picker.dart';
 
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
 class AuthViewModel extends ChangeNotifier {
   static const String _cachedUserKey = 'cached_user';
-  static const String _googleWebClientId =
-      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
@@ -33,11 +30,6 @@ class AuthViewModel extends ChangeNotifier {
   final ChangeEmailUseCase changeEmailUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
   final UploadProfilePictureUseCase uploadProfilePictureUseCase;
-
-  late final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: const ['email', 'profile'],
-    serverClientId: _googleWebClientId.isNotEmpty ? _googleWebClientId : null,
-  );
 
   AuthViewModel({
     required this.loginUseCase,
@@ -152,16 +144,12 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        _state = AuthState.initial;
-        notifyListeners();
-        return;
-      }
+      // GoogleSignIn v7.x: authenticate() returns non-nullable GoogleSignInAccount.
+      // It throws GoogleSignInException on cancellation or failure.
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
+      final googleAuth = googleUser.authentication;
+      final idToken = googleAuth.idToken;
 
       if (idToken == null) {
         _state = AuthState.error;
@@ -198,8 +186,9 @@ class AuthViewModel extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
+      // Handles GoogleSignInException (cancellation) and other errors
       _state = AuthState.error;
-      _errorMessage = 'Google Sign-In Error: ${e.toString()}';
+      _errorMessage = 'Google Sign-In Error: $e';
       notifyListeners();
     }
   }
@@ -290,7 +279,11 @@ class AuthViewModel extends ChangeNotifier {
     _user = null;
     TokenStorage.instance.clearTokens();
     await _clearPersistedUser();
-    await _googleSignIn.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {
+      // Ignore sign-out failures — user is already being logged out locally
+    }
     _state = AuthState.unauthenticated;
     notifyListeners();
   }
@@ -322,17 +315,14 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> uploadProfilePicture() async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image == null) return;
-
+  /// Upload profile picture from a file path.
+  /// Image picking should be done in the UI layer before calling this.
+  Future<void> uploadProfilePicture(String filePath) async {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await uploadProfilePictureUseCase(image.path);
+    final result = await uploadProfilePictureUseCase(filePath);
 
     result.fold(
       (failure) {

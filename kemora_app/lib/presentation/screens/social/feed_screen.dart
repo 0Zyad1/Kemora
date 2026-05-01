@@ -59,6 +59,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             name: story.userName,
                             imageAsset: story.imageAsset,
                             location: story.location,
+                            storyId: story.id,
                           ),
                         )),
                   ],
@@ -145,6 +146,7 @@ class _FeedScreenState extends State<FeedScreen> {
     required String name,
     String? imageAsset,
     String? location,
+    String? storyId,
   }) {
     final fallbackImage = 'assets/images/mocked/CommunityStory.jpg';
     final img = imageAsset ?? fallbackImage;
@@ -152,7 +154,7 @@ class _FeedScreenState extends State<FeedScreen> {
     return GestureDetector(
       onTap: () {
         if (!isAdd) {
-          Navigator.push(context, FadePageRoute(child: StoryViewerScreen(userName: name, imageUrl: img)));
+          Navigator.push(context, FadePageRoute(child: StoryViewerScreen(storyId: storyId!)));
         } else {
           Navigator.push(context, FadePageRoute(child: const CreatePostScreen()));
         }

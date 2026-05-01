@@ -32,6 +32,9 @@ class AppColors {
   static const Color onTertiaryFixed = Color(0xFF001e2c);
   static const Color onTertiaryFixedVariant = Color(0xFF004c69);
 
+  // Ratings
+  static const Color ratingGold = Color(0xFFD4A03C);
+
   // Surface
   static const Color surface = Color(0xFFf9f9f9);
   static const Color surfaceBright = Color(0xFFf9f9f9);

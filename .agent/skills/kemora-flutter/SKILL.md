@@ -55,13 +55,17 @@ kemora_app/lib/
 │       ├── glassmorphism_container.dart
 │       ├── itinerary_widgets.dart
 │       └── kimora_app_bar.dart
-├── providers/                   # AppProvider (locale, misc state)
-├── screens/                     # Legacy screens (older pattern — prefer presentation/screens/)
+├── providers/                   # Contextual State (Frontend-Only Integration)
+│   ├── app_provider.dart        # Theme/Locale/Global state
+│   ├── community_provider.dart  # Shared social state (posts/stories)
+│   ├── trip_local_provider.dart # Local trip drafts/inspiration
+│   └── voucher_provider.dart    # Gamification/Points/Redemption state
+├── l10n/                        # Localization (en, ar)
 ├── services/                    # Standalone services
-│   ├── ai_trip_service.dart     # AI trip planning service
+│   ├── ai_trip_service.dart     # AI trip planning service (Current: Mock)
 │   └── mock_data_service.dart   # Mock data for development
-└── l10n/                        # Localization (en, ar)
 ```
+
 
 ## Technology Stack
 
@@ -149,14 +153,13 @@ Error handling wraps DioExceptions into Left(Failure).
 - **Auth**: LoginScreen, RegisterScreen
 - **Onboarding**: 4-screen flow before login
 - **Splash**: SplashScreen (branding + auto-auth check)
-- **Home**: HomeScreen (hero card, quick actions, top places carousel)
-- **Explore**: GovernorateMapView, PlacesScreen, PlaceDetailScreen, GovernorateplacesScreen
-- **Social**: FeedScreen, PostDetailScreen, ChatListScreen, ChatDetailScreen
-- **Profile**: ProfileScreen (settings, badges, favorites), PublicProfileScreen, SettingsScreen
-- **Trip Planner**: TripPlannerScreen, GenerateAiItineraryScreen, AiItineraryResultScreen
-- **Badges**: BadgesScreen (gamification)
-- **Search**: Global search screen
-- **Navigation**: Bottom navigation shell
+- **Home**: HomeScreen (CustomScrollView + sticky search + shared stories)
+- **Explore**: GovernoratesMapScreen (Interactive SVG map), PlacesScreen, PlaceDetailScreen, GovernorateDetailScreen (sticky search + categorization)
+- **Social**: FeedScreen (interactive provider-driven feed), CreatePostScreen (stateful creator), StoryViewerScreen
+- **Profile**: PublicProfileScreen (Voucher-integrated bento layout), RedeemedVouchersScreen (code viewer), SavedPlacesScreen
+- **Trip Planner**: TripPlannerEntryScreen (with "Recent Inspiration"), TripDetailScreen (Vertical Roadmap/Itinerary)
+- **Search**: Global search screen with sticky behavior
+- **Navigation**: Bottom navigation shell with radial blurry glow
 
 #### Reusable Widgets:
 - `EditorialPlaceCard` — Premium card with editorial styling
@@ -372,3 +375,14 @@ Backend exposes SignalR at `/hubs/notifications`. Flutter integration via `signa
 3. Use `const` constructor
 4. Apply theme tokens from `AppColors`, `AppTypography`
 5. Support both light and dark modes via `Theme.of(context)`
+
+## Special Phase: Functional Mock Integration (2026)
+As the project moves from static UI to backend-ready, we use **Integration Providers** (`lib/providers/`) to wire together complex user flows without requiring a live server.
+
+### When to use Providers vs ViewModels:
+- **ViewModels**: Use for specific API endpoints defined in the Swagger/OpenAPI spec. Follow the Clean Architecture flow (Entity -> Repo -> UseCase -> VM).
+- **Providers**: Use for "cross-tab" data sharing (e.g., Stories shown in both Home and Community) or for simulating local persistence (e.g., Draft Trips) during UX testing.
+
+### Sticky UI Pattern
+- Prefer `CustomScrollView` with `SliverPersistentHeader` for sticky search bars to maintain the "Desert Editorial" premium feel.
+- Ensure the `maxExtent` and `minExtent` are carefully tuned to avoid jitter.

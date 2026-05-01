@@ -9,6 +9,7 @@ import 'trip_detail_screen.dart';
 import '../../widgets/fade_slide_in.dart';
 import '../../widgets/tap_scale.dart';
 import '../../../core/router/page_transitions.dart';
+import '../../../data/local/trip_mock_data.dart';
 
 class TripPlannerEntryScreen extends StatelessWidget {
   const TripPlannerEntryScreen({super.key});
@@ -157,6 +158,7 @@ class TripPlannerEntryScreen extends StatelessWidget {
                             return GestureDetector(
                               onTap: () => Navigator.push(context,
                                   MaterialPageRoute(builder: (_) => TripDetailScreen(trip: trip))),
+                              onLongPress: () => _showTripMenu(context, tripProvider, trip),
                               child: Container(
                                 width: 280,
                                 margin: const EdgeInsets.only(right: 16),
@@ -207,6 +209,62 @@ class TripPlannerEntryScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+
+  void _showTripMenu(BuildContext context, TripLocalProvider provider, LocalTrip trip) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.surfaceContainerHigh, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 24),
+            Text(trip.title, style: AppTypography.titleLarge),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: Icon(trip.isVisited ? Icons.check_circle : Icons.check_circle_outline, color: AppColors.primaryContainer),
+              title: Text(trip.isVisited ? 'Mark as Unvisited' : 'Mark as Visited'),
+              onTap: () {
+                provider.toggleVisited(trip.id);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.star_outline, color: AppColors.ratingGold),
+              title: const Text('Review Trip'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review feature coming soon!')));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: AppColors.outline),
+              title: const Text('Trip Info'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => TripDetailScreen(trip: trip)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: AppColors.error),
+              title: const Text('Delete Trip', style: TextStyle(color: AppColors.error)),
+              onTap: () {
+                provider.removeTrip(trip.id);
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }

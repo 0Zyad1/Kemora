@@ -56,7 +56,7 @@ class SavedPlacesScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.star, size: 16, color: AppColors.tertiary),
+                              const Icon(Icons.star, size: 16, color: AppColors.ratingGold),
                               const SizedBox(width: 4),
                               Text('${place.rating}', style: AppTypography.labelSmall),
                             ],

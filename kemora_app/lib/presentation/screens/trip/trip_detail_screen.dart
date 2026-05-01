@@ -223,7 +223,7 @@ class TripDetailScreen extends StatelessWidget {
             // Review score
             Row(
               children: [
-                const Icon(Icons.star, color: AppColors.tertiary, size: 20),
+                const Icon(Icons.star, color: AppColors.ratingGold, size: 20),
                 const SizedBox(width: 8),
                 Text('${stop.reviewScore}/5.0',
                     style: AppTypography.titleMedium

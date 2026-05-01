@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_shadows.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/local/governorate_data.dart';
 import 'governorate_detail_screen.dart';
 import '../../widgets/fade_slide_in.dart';
@@ -16,25 +17,50 @@ class GovernoratesMapScreen extends StatefulWidget {
 
 class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
   int _selectedIndex = 0;
+  static const String _prefKey = 'selected_governorate_index';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPersistedIndex();
+  }
+
+  Future<void> _loadPersistedIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    final index = prefs.getInt(_prefKey);
+    if (index != null && index >= 0 && index < governoratesData.length) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  Future<void> _savePersistedIndex(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefKey, index);
+  }
+
+  void _updateIndex(int newIndex) {
+    setState(() {
+      _selectedIndex = newIndex;
+    });
+    _savePersistedIndex(newIndex);
+  }
 
   void _nextGovernorate() {
-    setState(() {
-      if (_selectedIndex < governoratesData.length - 1) {
-        _selectedIndex++;
-      } else {
-        _selectedIndex = 0;
-      }
-    });
+    if (_selectedIndex < governoratesData.length - 1) {
+      _updateIndex(_selectedIndex + 1);
+    } else {
+      _updateIndex(0);
+    }
   }
 
   void _prevGovernorate() {
-    setState(() {
-      if (_selectedIndex > 0) {
-        _selectedIndex--;
-      } else {
-        _selectedIndex = governoratesData.length - 1;
-      }
-    });
+    if (_selectedIndex > 0) {
+      _updateIndex(_selectedIndex - 1);
+    } else {
+      _updateIndex(governoratesData.length - 1);
+    }
   }
 
   @override
@@ -69,7 +95,7 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
               child: FadeSlideIn(
                 delayMs: 200,
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedIndex = index),
+                  onTap: () => _updateIndex(index),
                   child: isSelected
                       ? Container(
                           width: 20,
@@ -143,9 +169,11 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                       const BorderRadius.vertical(top: Radius.circular(40)),
                   boxShadow: AppShadows.floatingIsland,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     Center(
                       child: Container(
                         width: 48,
@@ -239,11 +267,12 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),

@@ -138,7 +138,7 @@ class EditorialPlaceCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Row(
                         children: [
-                          const Icon(Icons.star, color: AppColors.tertiary, size: 16),
+                          const Icon(Icons.star, color: AppColors.ratingGold, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             rating.toStringAsFixed(1),

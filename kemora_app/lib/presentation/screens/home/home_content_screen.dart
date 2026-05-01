@@ -6,7 +6,7 @@ import '../../widgets/filter_chip_row.dart';
 import '../../widgets/editorial_place_card.dart';
 import '../../../data/local/place_data.dart';
 import '../explore/place_detail_screen.dart';
-import '../search/global_search_screen.dart';
+
 import '../../widgets/fade_slide_in.dart';
 import '../../widgets/tap_scale.dart';
 import '../../../core/router/page_transitions.dart';
@@ -26,6 +26,15 @@ class HomeContentScreen extends StatefulWidget {
 
 class _HomeContentScreenState extends State<HomeContentScreen> {
   int _selectedFilterIndex = 0;
+  String _searchQuery = '';
+  bool _showFilters = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
   final List<String> _filters = [
     'All Odyssey',
     'Ancient Ruins',
@@ -34,11 +43,15 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
   ];
 
   List<PlaceInfo> get _filteredPlaces {
-    if (_selectedFilterIndex == 0) return placesData;
-    if (_selectedFilterIndex == 1) return placesData.where((p) => p.category == 'Ancient Places').toList();
-    if (_selectedFilterIndex == 2) return placesData.where((p) => p.category == 'Hotels' || p.category == 'Restaurants').toList();
-    if (_selectedFilterIndex == 3) return placesData.where((p) => p.category == 'Others').toList();
-    return placesData;
+    List<PlaceInfo> places = placesData;
+    if (_selectedFilterIndex == 1) places = places.where((p) => p.category == 'Ancient Places').toList();
+    if (_selectedFilterIndex == 2) places = places.where((p) => p.category == 'Hotels' || p.category == 'Restaurants').toList();
+    if (_selectedFilterIndex == 3) places = places.where((p) => p.category == 'Others').toList();
+    
+    if (_searchQuery.isNotEmpty) {
+      places = places.where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    }
+    return places;
   }
 
   String get _sectionTitle {
@@ -98,7 +111,20 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
         // Sticky Search Bar
         SliverPersistentHeader(
           pinned: true,
-          delegate: _StickySearchDelegate(),
+          delegate: _StickySearchDelegate(
+            controller: _searchController,
+            showFilters: _showFilters,
+            onSearchChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
+            onFilterTapped: () {
+              setState(() {
+                _showFilters = !_showFilters;
+              });
+            },
+          ),
         ),
 
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -156,7 +182,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
           child: FadeSlideIn(
             delayMs: 400,
             child: SizedBox(
-              height: 380,
+              height: 320,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -228,6 +254,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
                                     name: story.userName,
                                     imageAsset: story.imageAsset,
                                     location: story.location,
+                                    storyId: story.id,
                                   ),
                                 )),
                           ],
@@ -397,6 +424,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     required String name,
     String? imageAsset,
     String? location,
+    String? storyId,
   }) {
     final fallbackImage = 'assets/images/mocked/CommunityStory.jpg';
     final img = imageAsset ?? fallbackImage;
@@ -404,7 +432,7 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
     return GestureDetector(
       onTap: () {
         if (!isAdd) {
-          Navigator.push(context, FadePageRoute(child: StoryViewerScreen(userName: name, imageUrl: img)));
+          Navigator.push(context, FadePageRoute(child: StoryViewerScreen(storyId: storyId!)));
         } else {
           Navigator.push(context, FadePageRoute(child: const CreatePostScreen()));
         }
@@ -476,75 +504,154 @@ class _HomeContentScreenState extends State<HomeContentScreen> {
 }
 
 class _StickySearchDelegate extends SliverPersistentHeaderDelegate {
+  final TextEditingController controller;
+  final bool showFilters;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onFilterTapped;
+
+  _StickySearchDelegate({
+    required this.controller,
+    required this.showFilters,
+    required this.onSearchChanged,
+    required this.onFilterTapped,
+  });
+
   @override
-  double get minExtent => 80;
+  double get minExtent => showFilters ? 260.0 : 80.0;
   @override
-  double get maxExtent => 80;
+  double get maxExtent => showFilters ? 260.0 : 80.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: AppColors.surface, // Matches background to hide content scrolling behind
-      alignment: Alignment.center,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(context,
-                FadePageRoute(child: const GlobalSearchScreen()));
-          },
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(999),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on,
-                    color: AppColors.primaryContainer, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Where to next?',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.outline),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        FadePageRoute(
-                            child: const GlobalSearchScreen(
-                                openFilters: true)));
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceContainerHigh,
-                      shape: BoxShape.circle,
+      alignment: Alignment.topCenter,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 80,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
-                    child: const Icon(Icons.tune,
-                        color: AppColors.onSurface, size: 16),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on, color: AppColors.primaryContainer, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        onChanged: onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: 'Where to next?',
+                          hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.outline),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: onFilterTapped,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: showFilters ? AppColors.primaryContainer : AppColors.surfaceContainerHigh,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.tune,
+                          color: showFilters ? AppColors.onPrimary : AppColors.onSurface,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Inline Filters
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: showFilters ? 180 : 0,
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Minimum Rating', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: List.generate(5, (index) => const Icon(
+                          Icons.star,
+                          color: AppColors.ratingGold,
+                          size: 24,
+                        )),
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: onFilterTapped,
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: onFilterTapped,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                            child: const Text('Apply'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
   @override
-  bool shouldRebuild(covariant _StickySearchDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant _StickySearchDelegate oldDelegate) {
+    return oldDelegate.showFilters != showFilters;
+  }
 }

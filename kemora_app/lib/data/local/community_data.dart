@@ -9,6 +9,9 @@ class CommunityStory {
   final String? caption;
   final String location;
   final DateTime createdAt;
+  final int likes;
+  final bool isLikedByMe;
+  final List<CommunityComment> comments;
 
   const CommunityStory({
     required this.id,
@@ -18,6 +21,9 @@ class CommunityStory {
     this.caption,
     required this.location,
     required this.createdAt,
+    this.likes = 0,
+    this.isLikedByMe = false,
+    this.comments = const [],
   });
 
   CommunityStory copyWith({
@@ -28,6 +34,9 @@ class CommunityStory {
     String? caption,
     String? location,
     DateTime? createdAt,
+    int? likes,
+    bool? isLikedByMe,
+    List<CommunityComment>? comments,
   }) {
     return CommunityStory(
       id: id ?? this.id,
@@ -37,6 +46,9 @@ class CommunityStory {
       caption: caption ?? this.caption,
       location: location ?? this.location,
       createdAt: createdAt ?? this.createdAt,
+      likes: likes ?? this.likes,
+      isLikedByMe: isLikedByMe ?? this.isLikedByMe,
+      comments: comments ?? this.comments,
     );
   }
 }
@@ -124,6 +136,16 @@ final List<CommunityStory> seedStories = [
     caption: 'Luxor Temple at sunset 🌅',
     location: 'Luxor',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+    likes: 124,
+    comments: [
+      CommunityComment(
+        id: 'c1',
+        postId: 's1',
+        userName: 'Ahmed',
+        content: 'Beautiful shot!',
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+    ],
   ),
   CommunityStory(
     id: 's2',
@@ -133,6 +155,7 @@ final List<CommunityStory> seedStories = [
     caption: 'Cairo skyline from the Tower',
     location: 'Cairo',
     createdAt: DateTime.now().subtract(const Duration(hours: 4)),
+    likes: 89,
   ),
   CommunityStory(
     id: 's3',
@@ -142,6 +165,7 @@ final List<CommunityStory> seedStories = [
     caption: 'The view that never gets old',
     location: 'Giza',
     createdAt: DateTime.now().subtract(const Duration(hours: 6)),
+    likes: 342,
   ),
   CommunityStory(
     id: 's4',
@@ -151,6 +175,7 @@ final List<CommunityStory> seedStories = [
     caption: 'Desert magic ✨',
     location: 'Siwa',
     createdAt: DateTime.now().subtract(const Duration(hours: 8)),
+    likes: 56,
   ),
 ];
 

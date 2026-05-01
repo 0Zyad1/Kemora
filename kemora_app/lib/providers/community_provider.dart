@@ -22,6 +22,37 @@ class CommunityProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleStoryLike(String storyId) {
+    final index = _stories.indexWhere((s) => s.id == storyId);
+    if (index == -1) return;
+
+    final story = _stories[index];
+    _stories[index] = story.copyWith(
+      isLikedByMe: !story.isLikedByMe,
+      likes: story.isLikedByMe ? story.likes - 1 : story.likes + 1,
+    );
+    notifyListeners();
+  }
+
+  void addStoryComment(String storyId, String userName, String content) {
+    final index = _stories.indexWhere((s) => s.id == storyId);
+    if (index == -1) return;
+
+    final story = _stories[index];
+    final newComment = CommunityComment(
+      id: 'sc_${DateTime.now().millisecondsSinceEpoch}',
+      postId: storyId,
+      userName: userName,
+      content: content,
+      createdAt: DateTime.now(),
+    );
+
+    _stories[index] = story.copyWith(
+      comments: [newComment, ...story.comments],
+    );
+    notifyListeners();
+  }
+
   // ── Posts ──────────────────────────────────────────────────────────
 
   void addPost(CommunityPost post) {

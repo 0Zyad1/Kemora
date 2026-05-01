@@ -7,7 +7,9 @@ import '../../../../providers/community_provider.dart';
 /// Bottom sheet displaying comments for a post with inline add comment.
 class CommentBottomSheet extends StatefulWidget {
   final String postId;
-  const CommentBottomSheet({super.key, required this.postId});
+  final bool isStory;
+
+  const CommentBottomSheet({super.key, required this.postId, this.isStory = false});
 
   @override
   State<CommentBottomSheet> createState() => _CommentBottomSheetState();
@@ -26,7 +28,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    context.read<CommunityProvider>().addComment(widget.postId, 'You', text);
+    if (widget.isStory) {
+      context.read<CommunityProvider>().addStoryComment(widget.postId, 'You', text);
+    } else {
+      context.read<CommunityProvider>().addComment(widget.postId, 'You', text);
+    }
     _controller.clear();
   }
 
@@ -40,7 +46,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final comments = context.watch<CommunityProvider>().getComments(widget.postId);
+    final community = context.watch<CommunityProvider>();
+    final comments = widget.isStory 
+        ? (community.stories.firstWhere((s) => s.id == widget.postId).comments)
+        : community.getComments(widget.postId);
 
     return Container(
       constraints: BoxConstraints(

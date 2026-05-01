@@ -3,7 +3,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../widgets/glassmorphism_container.dart';
 import '../../../data/local/place_data.dart';
-import '../trip/trip_roadmap_screen.dart';
+import '../../../data/local/trip_mock_data.dart';
+import '../../../providers/trip_local_provider.dart';
+import 'package:provider/provider.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final PlaceInfo place;
@@ -92,6 +94,19 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> with SingleTicker
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Text('Explore', style: AppTypography.labelSmall.copyWith(color: AppColors.primaryContainer)),
+                              ),
+                              const SizedBox(width: 4),
+                              Text('>', style: AppTypography.labelSmall.copyWith(color: Colors.white54)),
+                              const SizedBox(width: 4),
+                              Text(widget.place.category.toUpperCase(), style: AppTypography.labelSmall.copyWith(color: Colors.white70)),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
@@ -175,17 +190,21 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> with SingleTicker
               ],
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TripRoadmapScreen()),
-                );
-              },
+              onPressed: () => _showAddToTripSheet(context),
               child: const Text('Add to trip'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showAddToTripSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AddToTripSheet(place: widget.place),
     );
   }
 
@@ -212,7 +231,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> with SingleTicker
               decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
-                  const Icon(Icons.star, size: 16, color: AppColors.tertiary),
+                  const Icon(Icons.star, size: 16, color: AppColors.ratingGold),
                   const SizedBox(width: 8),
                   Text('${widget.place.rating}', style: AppTypography.labelMedium),
                 ],
@@ -297,7 +316,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> with SingleTicker
                     children: List.generate(5, (index) => Icon(
                       index < rating.floor() ? Icons.star : Icons.star_border,
                       size: 16,
-                      color: AppColors.tertiary,
+                      color: AppColors.ratingGold,
                     )),
                   ),
                 ],
@@ -438,5 +457,180 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
+  }
+}
+
+class _AddToTripSheet extends StatefulWidget {
+  final PlaceInfo place;
+  const _AddToTripSheet({required this.place});
+
+  @override
+  State<_AddToTripSheet> createState() => _AddToTripSheetState();
+}
+
+class _AddToTripSheetState extends State<_AddToTripSheet> {
+  String? _selectedTripId;
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<TripLocalProvider>();
+    final trips = provider.trips;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Container(
+            width: 48,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text('Add to Trip', style: AppTypography.headlineMedium),
+          const SizedBox(height: 8),
+          Text('Drag the place card to a specific day', style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant)),
+          const SizedBox(height: 24),
+          
+          // Draggable Place Card
+          Draggable<PlaceInfo>(
+            data: widget.place,
+            feedback: Material(
+              color: Colors.transparent,
+              child: Opacity(
+                opacity: 0.8,
+                child: _buildDraggableCard(),
+              ),
+            ),
+            childWhenDragging: Opacity(
+              opacity: 0.3,
+              child: _buildDraggableCard(),
+            ),
+            child: _buildDraggableCard(),
+          ),
+          
+          const SizedBox(height: 24),
+          const Divider(color: AppColors.surfaceContainerHigh),
+          
+          Expanded(
+            child: trips.isEmpty 
+              ? Center(child: Text('No trips found. Create one first!', style: AppTypography.bodyLarge))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: trips.length,
+                  itemBuilder: (context, index) {
+                    final trip = trips[index];
+                    final isExpanded = _selectedTripId == trip.id;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(trip.title, style: AppTypography.titleLarge),
+                          subtitle: Text('${trip.days.length} days', style: AppTypography.labelSmall),
+                          trailing: Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+                          onTap: () {
+                            setState(() {
+                              _selectedTripId = isExpanded ? null : trip.id;
+                            });
+                          },
+                        ),
+                        if (isExpanded)
+                          ...trip.days.map((day) => _buildDayTarget(context, trip, day)),
+                        const Divider(color: AppColors.surfaceContainerHigh),
+                      ],
+                    );
+                  },
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDraggableCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: AppColors.primaryContainer.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.drag_indicator, color: AppColors.onPrimary),
+          const SizedBox(width: 12),
+          Text(widget.place.name, style: AppTypography.titleMedium.copyWith(color: AppColors.onPrimary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDayTarget(BuildContext context, LocalTrip trip, TripDay day) {
+    return DragTarget<PlaceInfo>(
+      onAcceptWithDetails: (details) {
+        final stop = TripStop(
+          placeId: details.data.id,
+          name: details.data.name,
+          time: 'New Stop',
+          category: details.data.category,
+          reviewScore: details.data.rating,
+          isCompleted: false,
+        );
+        context.read<TripLocalProvider>().addStopToDay(trip.id, day.dayNumber, stop);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${details.data.name} added to Day ${day.dayNumber} of ${trip.title}')),
+        );
+        Navigator.pop(context);
+      },
+      builder: (context, candidateData, rejectedData) {
+        final isHovering = candidateData.isNotEmpty;
+        return Container(
+          margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isHovering ? AppColors.secondaryContainer : AppColors.surfaceContainerLowest,
+            border: Border.all(color: isHovering ? AppColors.primaryContainer : AppColors.outlineVariant),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerHigh,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(child: Text('${day.dayNumber}', style: AppTypography.labelMedium)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(day.title, style: AppTypography.titleMedium),
+                    Text('${day.stops.length} stops', style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              if (isHovering)
+                const Icon(Icons.add_circle, color: AppColors.primaryContainer),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

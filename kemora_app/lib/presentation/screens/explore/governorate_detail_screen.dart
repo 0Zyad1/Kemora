@@ -75,7 +75,18 @@ class _GovernorateDetailScreenState extends State<GovernorateDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('DISCOVER', style: AppTypography.labelSmall.copyWith(color: AppColors.primaryContainer)),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Text('Explore', style: AppTypography.labelSmall.copyWith(color: AppColors.primaryContainer)),
+              ),
+              const SizedBox(width: 4),
+              Text('>', style: AppTypography.labelSmall.copyWith(color: AppColors.outline)),
+              const SizedBox(width: 4),
+              Text(widget.governorate.name.toUpperCase(), style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+            ],
+          ),
           const SizedBox(height: 8),
           Text(widget.governorate.name, style: AppTypography.displaySmall),
           const SizedBox(height: 12),

@@ -24,6 +24,15 @@ class TripLocalProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleVisited(String tripId) {
+    final index = _trips.indexWhere((t) => t.id == tripId);
+    if (index != -1) {
+      final trip = _trips[index];
+      _trips[index] = trip.copyWith(isVisited: !trip.isVisited);
+      notifyListeners();
+    }
+  }
+
   void addStopToDay(String tripId, int dayNumber, TripStop stop) {
     final tripIndex = _trips.indexWhere((t) => t.id == tripId);
     if (tripIndex == -1) return;

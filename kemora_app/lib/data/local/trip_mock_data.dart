@@ -72,6 +72,7 @@ class LocalTrip {
   final int durationDays;
   final List<TripDay> days;
   final DateTime createdAt;
+  final bool isVisited;
 
   const LocalTrip({
     required this.id,
@@ -80,6 +81,7 @@ class LocalTrip {
     required this.durationDays,
     required this.days,
     required this.createdAt,
+    this.isVisited = false,
   });
 
   LocalTrip copyWith({
@@ -89,6 +91,7 @@ class LocalTrip {
     int? durationDays,
     List<TripDay>? days,
     DateTime? createdAt,
+    bool? isVisited,
   }) {
     return LocalTrip(
       id: id ?? this.id,
@@ -97,6 +100,7 @@ class LocalTrip {
       durationDays: durationDays ?? this.durationDays,
       days: days ?? this.days,
       createdAt: createdAt ?? this.createdAt,
+      isVisited: isVisited ?? this.isVisited,
     );
   }
 }

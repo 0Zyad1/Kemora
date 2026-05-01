@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../home/home_screen.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -10,7 +10,7 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -108,6 +108,29 @@ class RegisterScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56)),
               child: const Text('Create Account'),
+            ),
+            
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                const Expanded(child: Divider()),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('OR SIGN UP WITH', style: AppTypography.labelSmall),
+                ),
+                const Expanded(child: Divider()),
+              ],
+            ),
+            
+            const SizedBox(height: 32),
+            OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.g_mobiledata, color: Colors.black, size: 28),
+              label: const Text('Continue with Google', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 56),
+              ),
             ),
             
             const SizedBox(height: 32),

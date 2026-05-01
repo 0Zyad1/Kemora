@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../widgets/editorial_place_card.dart';
 import '../../../data/local/place_data.dart';
 import '../../../data/local/governorate_data.dart';
@@ -105,7 +105,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final results = _filteredPlaces;
 
     return Scaffold(
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: Column(
         children: [
           // Search Bar
@@ -298,6 +298,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                           price: place.price,
                           distance: place.distance,
                           isFavorite: false,
+                          imageAsset: place.imageAsset,
                         ),
                       ),
                     ),

@@ -18,19 +18,10 @@ class AIItineraryResultScreen extends StatefulWidget {
   State<AIItineraryResultScreen> createState() => _AIItineraryResultScreenState();
 }
 
-class _AIItineraryResultScreenState extends State<AIItineraryResultScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _AIItineraryResultScreenState extends State<AIItineraryResultScreen> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: widget.itinerary.days.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override
@@ -47,20 +38,16 @@ class _AIItineraryResultScreenState extends State<AIItineraryResultScreen> with 
         actions: [
           _buildAlternativeSelector(tripVM),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          labelColor: const Color(0xFFC5A358),
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFFC5A358),
-          tabs: widget.itinerary.days.map((day) => Tab(text: 'Day ${day.dayNumber}')).toList(),
-        ),
       ),
       body: tripVM.state == TripState.loading 
           ? const Center(child: CircularProgressIndicator(color: Color(0xFFC5A358)))
-          : TabBarView(
-              controller: _tabController,
-              children: widget.itinerary.days.map((day) => _buildDayView(day)).toList(),
+          : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 20),
+              itemCount: widget.itinerary.days.length,
+              itemBuilder: (context, index) {
+                final day = widget.itinerary.days[index];
+                return _buildDayVerticalView(day);
+              },
             ),
       bottomNavigationBar: _buildBottomBar(context),
     );
@@ -117,23 +104,39 @@ class _AIItineraryResultScreenState extends State<AIItineraryResultScreen> with 
     );
   }
 
-  Widget _buildDayView(TripDay day) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: day.activities.length,
-      itemBuilder: (context, index) {
-        final activity = day.activities[index];
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTimeline(index, day.activities.length),
-              const SizedBox(width: 16),
-              Expanded(child: _buildActivityCard(activity)),
-            ],
+  Widget _buildDayVerticalView(TripDay day) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+          child: Text(
+            'Day ${day.dayNumber}',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFC5A358),
+            ),
           ),
-        );
-      },
+        ),
+        ...day.activities.asMap().entries.map((entry) {
+          final index = entry.key;
+          final activity = entry.value;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildTimeline(index, day.activities.length),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildActivityCard(activity)),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 

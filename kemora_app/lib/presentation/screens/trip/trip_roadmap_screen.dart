@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../widgets/glassmorphism_container.dart';
 import 'trip_view_roadmap_screen.dart';
 
@@ -12,7 +12,7 @@ class TripRoadmapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: Stack(
         children: [
           // Map Background Placeholder

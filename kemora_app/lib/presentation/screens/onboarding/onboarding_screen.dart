@@ -140,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text('CURATED ARCHIVES', style: AppTypography.headlineSmall.copyWith(color: AppColors.primaryContainer)),
           const SizedBox(height: 8),
-          Text('Three pillars of the Kimora experience.', style: AppTypography.bodyMedium),
+          Text('Three pillars of the Kemora experience.', style: AppTypography.bodyMedium),
           const SizedBox(height: 48),
           
           _buildFeatureCard(Icons.account_balance, 'Hidden Temples', 'Access exclusive guides to lesser-known archaeological sites across the Valley of the Kings.', AppColors.secondaryFixed),

@@ -3,7 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../data/local/governorate_data.dart';
-import 'places_screen.dart';
+import 'governorate_detail_screen.dart';
 import '../../widgets/fade_slide_in.dart';
 import '../../../core/router/page_transitions.dart';
 
@@ -44,7 +44,6 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-
           // Background Map Placeholder
           FadeSlideIn(
             delayMs: 0,
@@ -52,7 +51,9 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
               color: AppColors.surfaceContainerHigh,
               width: double.infinity,
               height: double.infinity,
-              child: const Center(child: Icon(Icons.map, size: 200, color: AppColors.outlineVariant)),
+              child: const Center(
+                  child: Icon(Icons.map,
+                      size: 200, color: AppColors.outlineVariant)),
             ),
           ),
 
@@ -104,7 +105,8 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                   children: [
                     RichText(
                       text: TextSpan(
-                        style: AppTypography.displaySmall.copyWith(color: AppColors.onSurface),
+                        style: AppTypography.displaySmall
+                            .copyWith(color: AppColors.onSurface),
                         children: const [
                           TextSpan(text: 'Explore the\n'),
                           TextSpan(
@@ -117,7 +119,8 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Select a region to discover historical treasures and modern marvels.',
-                      style: AppTypography.bodyLarge.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodyLarge
+                          .copyWith(color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -136,7 +139,8 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerLowest,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(40)),
                   boxShadow: AppShadows.floatingIsland,
                 ),
                 child: Column(
@@ -153,80 +157,79 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-
+                    // Navigation arrows + centered name
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.chevron_left, color: AppColors.outline),
-                              onPressed: _prevGovernorate,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(governorate.name.toUpperCase(), style: AppTypography.headlineLarge),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.location_on, size: 16, color: AppColors.onSurfaceVariant),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      governorate.region,
-                                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.chevron_right, color: AppColors.outline),
-                              onPressed: _nextGovernorate,
-                            ),
-                          ],
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left, color: AppColors.outline),
+                          onPressed: _prevGovernorate,
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.wb_sunny, color: AppColors.primaryContainer),
-                                const SizedBox(width: 8),
-                                Text(
-                                  governorate.temperature,
-                                  style: AppTypography.headlineMedium.copyWith(color: AppColors.primaryContainer),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              governorate.weather,
-                              style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant),
-                            ),
-                          ],
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(governorate.name.toUpperCase(),
+                                  style: AppTypography.headlineLarge, textAlign: TextAlign.center),
+                              const SizedBox(height: 4),
+                              Text(governorate.region,
+                                  style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant)),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right, color: AppColors.outline),
+                          onPressed: _nextGovernorate,
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 32),
-                    Text('TOP ACTIVITIES', style: AppTypography.labelSmall),
                     const SizedBox(height: 16),
-
+                    // Weather info
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: governorate.topActivities
-                          .map((act) => _buildActivityIcon(act.icon, act.label))
-                          .toList(),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.wb_sunny, color: AppColors.primaryContainer, size: 20),
+                        const SizedBox(width: 8),
+                        Text(governorate.temperature, style: AppTypography.titleLarge.copyWith(color: AppColors.primaryContainer)),
+                        const SizedBox(width: 12),
+                        Text(governorate.weather, style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant)),
+                      ],
                     ),
-
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 24),
+                    // Top Activities (2 + Show All)
+                    Text('TOP ACTIVITIES', style: AppTypography.labelSmall),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ...governorate.topActivities.take(2)
+                            .map((act) => Padding(
+                                  padding: const EdgeInsets.only(right: 12),
+                                  child: _buildActivityIcon(act.icon, act.label),
+                                )),
+                        if (governorate.topActivities.length > 2)
+                          GestureDetector(
+                            onTap: () => _showAllActivities(context, governorate),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text('Show All',
+                                  style: AppTypography.labelMedium.copyWith(color: AppColors.primaryContainer)),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).push(SlidePageRoute(
-                          child: PlacesScreen(governorate: governorate.name),
+                          child: GovernorateDetailScreen(governorate: governorate),
                         ));
                       },
-                      style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56)),
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 56)),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -260,6 +263,37 @@ class _GovernoratesMapScreenState extends State<GovernoratesMapScreen> {
           const SizedBox(height: 8),
           Text(label, style: AppTypography.labelMedium),
         ],
+      ),
+    );
+  }
+
+  void _showAllActivities(BuildContext context, GovernorateInfo gov) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${gov.name} Activities', style: AppTypography.headlineSmall),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: gov.topActivities
+                  .map((a) => Chip(
+                        avatar: Icon(a.icon, size: 16),
+                        label: Text(a.label),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

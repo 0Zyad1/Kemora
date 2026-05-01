@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../../data/local/place_data.dart';
 import 'trip_roadmap_screen.dart';
 
@@ -49,7 +49,7 @@ class _CustomRoadmapScreenState extends State<CustomRoadmapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: Column(
         children: [
           // Header

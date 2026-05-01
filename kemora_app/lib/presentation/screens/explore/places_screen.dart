@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../widgets/filter_chip_row.dart';
 import '../../widgets/editorial_place_card.dart';
 import '../../../data/local/place_data.dart';
@@ -68,7 +68,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
     final results = _filteredPlaces;
 
     return Scaffold(
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -157,6 +157,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                         price: place.price,
                         distance: place.distance,
                         isFavorite: false,
+                        imageAsset: place.imageAsset,
                       ),
                     ),
                   );

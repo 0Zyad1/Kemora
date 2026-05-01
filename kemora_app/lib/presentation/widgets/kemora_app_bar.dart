@@ -3,18 +3,15 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
-class KimoraAppBar extends StatelessWidget implements PreferredSizeWidget {
+class KemoraAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBack;
   final Widget? trailing;
   final VoidCallback? onMenuPressed;
-  final VoidCallback? onSearchTap;
-
-  const KimoraAppBar({
+  const KemoraAppBar({
     super.key,
     this.showBack = false,
     this.trailing,
     this.onMenuPressed,
-    this.onSearchTap,
   });
 
   @override
@@ -36,48 +33,38 @@ class KimoraAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: SafeArea(
             bottom: false,
             child: Container(
-              height: 64,
+              height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Leading
-                  GestureDetector(
-                    onTap: () {
-                      if (showBack) {
-                        Navigator.of(context).pop();
-                      } else if (onMenuPressed != null) {
-                        onMenuPressed!();
-                      }
-                    },
-                    child: Icon(
-                      showBack ? Icons.arrow_back : Icons.menu,
-                      color: AppColors.primaryContainer,
-                      size: 24,
-                    ),
-                  ),
-                  
+                  if (showBack)
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: AppColors.primaryContainer,
+                        size: 24,
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 24),
+
                   // Center
                   Text(
-                    'KIMORA',
+                    'KEMORA',
                     style: AppTypography.headlineSmall.copyWith(
                       color: AppColors.primaryContainer,
                       letterSpacing: 2.0, // Widest tracking
                     ),
                   ),
-                  
+
                   // Trailing
                   if (trailing != null)
                     trailing!
                   else
-                    GestureDetector(
-                      onTap: onSearchTap ?? () {},
-                      child: const Icon(
-                        Icons.search,
-                        color: AppColors.primaryContainer,
-                        size: 24,
-                      ),
-                    ),
+                    const SizedBox(width: 24),
                 ],
               ),
             ),
@@ -88,5 +75,5 @@ class KimoraAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(48);
 }

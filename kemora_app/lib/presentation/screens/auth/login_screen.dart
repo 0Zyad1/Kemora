@@ -21,14 +21,20 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Container(
                     color: AppColors.surfaceContainerHigh,
-                    child: const Center(child: Icon(Icons.image, size: 64, color: AppColors.outlineVariant)),
+                    child: Image.asset(
+                      'assets/images/mocked/ThePyramids.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.black.withValues(alpha: 0.2), Colors.black.withValues(alpha: 0.8)],
+                        colors: [
+                          Colors.black.withValues(alpha: 0.2),
+                          Colors.black.withValues(alpha: 0.8)
+                        ],
                       ),
                     ),
                   ),
@@ -36,9 +42,14 @@ class LoginScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('KIMORA', style: AppTypography.displaySmall.copyWith(color: Colors.white, letterSpacing: 4.0)),
+                        Text('KEMORA',
+                            style: AppTypography.displaySmall.copyWith(
+                                color: Colors.white, letterSpacing: 4.0)),
                         const SizedBox(height: 8),
-                        Text('THE MODERN ARCHIVIST', style: AppTypography.labelSmall.copyWith(color: AppColors.primaryFixedDim, letterSpacing: 2.0)),
+                        Text('THE MODERN ARCHIVIST',
+                            style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.primaryFixedDim,
+                                letterSpacing: 2.0)),
                       ],
                     ),
                   ),
@@ -52,11 +63,14 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Welcome Back', style: AppTypography.headlineLarge.copyWith(color: AppColors.primaryContainer)),
+                  Text('Welcome Back',
+                      style: AppTypography.headlineLarge
+                          .copyWith(color: AppColors.primaryContainer)),
                   const SizedBox(height: 8),
-                  Text('Sign in to continue your journey.', style: AppTypography.bodyLarge),
+                  Text('Sign in to continue your journey.',
+                      style: AppTypography.bodyLarge),
                   const SizedBox(height: 48),
-                  
+
                   TextField(
                     decoration: const InputDecoration(
                       hintText: 'Email Address',
@@ -72,69 +86,74 @@ class LoginScreen extends StatelessWidget {
                       suffixIcon: Icon(Icons.visibility_off),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text('Forgot Password?', style: AppTypography.labelMedium.copyWith(color: AppColors.primaryContainer)),
+                    child: Text('Forgot Password?',
+                        style: AppTypography.labelMedium
+                            .copyWith(color: AppColors.primaryContainer)),
                   ),
-                  
+
                   const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (_) => const HomeScreen()));
                     },
-                    style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56)),
-                    child: const Text('SIGN IN TO KIMORA'),
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 56)),
+                    child: const Text('SIGN IN TO KEMORA'),
                   ),
-                  
+
                   const SizedBox(height: 32),
                   Row(
                     children: [
                       const Expanded(child: Divider()),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('DISCOVERY LOGIN', style: AppTypography.labelSmall),
+                        child: Text('DISCOVERY LOGIN',
+                            style: AppTypography.labelSmall),
                       ),
                       const Expanded(child: Divider()),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {},
-                          icon: const Icon(Icons.g_mobiledata, color: Colors.black),
-                          label: const Text('Google', style: TextStyle(color: Colors.black)),
-                          style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.apple, color: Colors.white),
-                          label: const Text('Apple'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                          icon: const Icon(Icons.g_mobiledata,
+                              color: Colors.black, size: 28),
+                          label: const Text('Continue with Google',
+                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                          style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 56)),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 40),
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const RegisterScreen()));
                       },
                       child: RichText(
                         text: TextSpan(
                           style: AppTypography.bodyMedium,
                           children: [
                             const TextSpan(text: 'New to the archives? '),
-                            TextSpan(text: 'Create an account', style: TextStyle(color: AppColors.primaryContainer, fontWeight: FontWeight.bold)),
+                            TextSpan(
+                                text: 'Create an account',
+                                style: TextStyle(
+                                    color: AppColors.primaryContainer,
+                                    fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),

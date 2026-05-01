@@ -14,6 +14,9 @@ import 'presentation/viewmodels/post_view_model.dart';
 import 'presentation/viewmodels/trip_view_model.dart';
 import 'presentation/viewmodels/chat_view_model.dart';
 import 'providers/app_provider.dart';
+import 'providers/community_provider.dart';
+import 'providers/trip_local_provider.dart';
+import 'providers/voucher_provider.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -59,6 +62,9 @@ class KemoraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => di.sl<BadgeViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<ChatViewModel>()),
         ChangeNotifierProvider(create: (context) => AppProvider()),
+        ChangeNotifierProvider(create: (context) => CommunityProvider()),
+        ChangeNotifierProvider(create: (context) => TripLocalProvider()),
+        ChangeNotifierProvider(create: (context) => VoucherProvider()),
       ],
       child: MaterialApp(
         title: 'Kemora Travel Guide',

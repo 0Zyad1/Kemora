@@ -16,6 +16,7 @@ class EditorialPlaceCard extends StatelessWidget {
   final VoidCallback? onFavoriteTap;
   final bool isFavorite;
   final double aspectRatio;
+  final String? imageAsset;
 
   const EditorialPlaceCard({
     super.key,
@@ -29,7 +30,8 @@ class EditorialPlaceCard extends StatelessWidget {
     this.onTap,
     this.onFavoriteTap,
     this.isFavorite = false,
-    this.aspectRatio = 0.56, // 56:100 by default
+    this.aspectRatio = 0.56,
+    this.imageAsset,
   });
 
   @override
@@ -53,13 +55,25 @@ class EditorialPlaceCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Placeholder Image
-                    Container(
-                      color: AppColors.surfaceContainer,
-                      child: const Center(
-                        child: Icon(Icons.image_outlined, color: AppColors.outline, size: 48),
+                    // Image or Placeholder
+                    if (imageAsset != null)
+                      Image.asset(
+                        imageAsset!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppColors.surfaceContainer,
+                          child: const Center(
+                            child: Icon(Icons.image_outlined, color: AppColors.outline, size: 48),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        color: AppColors.surfaceContainer,
+                        child: const Center(
+                          child: Icon(Icons.image_outlined, color: AppColors.outline, size: 48),
+                        ),
                       ),
-                    ),
                     
                     // Category Badge
                     Positioned(

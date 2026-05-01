@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 
 class SearchFiltersScreen extends StatelessWidget {
   const SearchFiltersScreen({super.key});
@@ -9,7 +9,7 @@ class SearchFiltersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const KimoraAppBar(
+      appBar: const KemoraAppBar(
         showBack: false,
         trailing: Text('Reset', style: TextStyle(color: AppColors.primaryContainer)),
       ),

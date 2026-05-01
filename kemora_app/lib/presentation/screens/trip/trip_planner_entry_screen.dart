@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_shadows.dart';
-import 'trip_planner_screen.dart';
-import 'custom_roadmap_screen.dart';
+import '../../../providers/trip_local_provider.dart';
+import 'ai_step_questions_screen.dart';
+import 'trip_detail_screen.dart';
 import '../../widgets/fade_slide_in.dart';
 import '../../widgets/tap_scale.dart';
 import '../../../core/router/page_transitions.dart';
@@ -97,7 +99,7 @@ class TripPlannerEntryScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).push(SlidePageRoute(child: const TripPlannerScreen()));
+                        Navigator.of(context).push(SlidePageRoute(child: const AiStepQuestionsScreen()));
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 56),
@@ -112,117 +114,94 @@ class TripPlannerEntryScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Custom Builder Card
-          FadeSlideIn(
-            delayMs: 350,
-            child: TapScale(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: AppShadows.ambient,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.edit_road, color: AppColors.secondary),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'PRECISION',
-                            style: AppTypography.labelSmall.copyWith(color: AppColors.onSurfaceVariant),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text('Custom Builder', style: AppTypography.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Hand-pick every destination and activity for complete control over your trip.',
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 24),
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(SlidePageRoute(child: const CustomRoadmapScreen()));
-                      },
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 56),
-                      ),
-                      child: const Text('Draft from Scratch →'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+           // Removed Custom Builder Card
 
-          const SizedBox(height: 40),
 
           // Recent Inspiration
           FadeSlideIn(
             delayMs: 500,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Recent Inspiration', style: AppTypography.titleLarge),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: 280,
-                        margin: const EdgeInsets.only(right: 16),
+            child: Builder(
+              builder: (context) {
+                final tripProvider = context.watch<TripLocalProvider>();
+                final trips = tripProvider.trips;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Recent Inspiration', style: AppTypography.titleLarge),
+                    const SizedBox(height: 16),
+                    if (trips.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainer,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Stack(
+                        child: Column(
                           children: [
-                            const Center(child: Icon(Icons.image, size: 48, color: AppColors.outlineVariant)),
-                            Positioned(
-                              bottom: 16,
-                              left: 16,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Pharaohs & Pyramids',
-                                    style: AppTypography.titleMedium.copyWith(color: Colors.white),
-                                  ),
-                                  Text(
-                                    '5 Days • Cairo & Giza',
-                                    style: AppTypography.labelMedium.copyWith(color: Colors.white70),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            const Icon(Icons.explore_outlined, size: 48, color: AppColors.outlineVariant),
+                            const SizedBox(height: 12),
+                            Text('No trips yet. Start planning!',
+                                style: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant)),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                      )
+                    else
+                      SizedBox(
+                        height: 160,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: trips.length,
+                          itemBuilder: (context, index) {
+                            final trip = trips[index];
+                            return GestureDetector(
+                              onTap: () => Navigator.push(context,
+                                  MaterialPageRoute(builder: (_) => TripDetailScreen(trip: trip))),
+                              child: Container(
+                                width: 280,
+                                margin: const EdgeInsets.only(right: 16),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      AppColors.primaryContainer.withValues(alpha: 0.8),
+                                      AppColors.primaryContainer,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text('${trip.durationDays} DAYS',
+                                            style: AppTypography.labelSmall.copyWith(color: Colors.white)),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(trip.title,
+                                          style: AppTypography.titleLarge.copyWith(color: Colors.white)),
+                                      Text(trip.governorate,
+                                          style: AppTypography.labelMedium.copyWith(color: Colors.white70)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
 

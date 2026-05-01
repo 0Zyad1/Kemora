@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../../data/local/achievement_data.dart';
 
 class AllAchievementsScreen extends StatelessWidget {
@@ -12,7 +12,7 @@ class AllAchievementsScreen extends StatelessWidget {
     int totalPoints = achievementsData.where((a) => a.isEarned).fold(0, (sum, a) => sum + a.points);
 
     return Scaffold(
-      appBar: const KimoraAppBar(showBack: true),
+      appBar: const KemoraAppBar(showBack: true),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

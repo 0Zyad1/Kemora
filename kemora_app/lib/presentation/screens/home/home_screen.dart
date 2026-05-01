@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../widgets/kimora_app_bar.dart';
+import '../../widgets/kemora_app_bar.dart';
 import '../../widgets/floating_nav_bar.dart';
 import 'home_content_screen.dart';
 import '../explore/governorates_map_screen.dart';
 import '../trip/trip_planner_entry_screen.dart';
 import '../social/feed_screen.dart';
 import '../profile/public_profile_screen.dart';
-import '../search/global_search_screen.dart';
-import '../../../core/router/page_transitions.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,11 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: KimoraAppBar(
-        onSearchTap: () {
-          Navigator.push(context, FadePageRoute(child: const GlobalSearchScreen()));
-        },
-      ),
+      appBar: const KemoraAppBar(),
       body: Stack(
         children: [
           // Content with PageView for swipe navigation

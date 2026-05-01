@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 FadeSlideIn(
                   delayMs: 200,
                   child: Text(
-                    'KIMORA',
+                    'KEMORA',
                     style: AppTypography.displayLarge.copyWith(
                       color: AppColors.primaryContainer,
                       letterSpacing: 4.0,

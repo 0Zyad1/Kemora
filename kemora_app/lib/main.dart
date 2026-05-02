@@ -3,21 +3,50 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/di/injection_container.dart' as di;
+import 'core/auth/token_storage.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/splash/splash_screen.dart';
+import 'presentation/screens/home/home_screen.dart';
 import 'presentation/viewmodels/auth_view_model.dart';
 import 'presentation/viewmodels/badge_view_model.dart';
 import 'presentation/viewmodels/places_view_model.dart';
 import 'presentation/viewmodels/post_view_model.dart';
 import 'presentation/viewmodels/trip_view_model.dart';
 import 'presentation/viewmodels/chat_view_model.dart';
+import 'presentation/viewmodels/favorite_view_model.dart';
+import 'presentation/viewmodels/review_view_model.dart';
+import 'presentation/viewmodels/notification_view_model.dart';
 import 'providers/app_provider.dart';
+import 'providers/voucher_provider.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TokenStorage.instance.initialize();
   await di.init();
   runApp(const KemoraApp());
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authVm = context.watch<AuthViewModel>();
+
+    switch (authVm.state) {
+      case AuthState.authenticated:
+        return const HomeScreen();
+      case AuthState.loading:
+      case AuthState.initial:
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      case AuthState.unauthenticated:
+      case AuthState.error:
+        return const SplashScreen();
+    }
+  }
 }
 
 class KemoraApp extends StatelessWidget {
@@ -33,15 +62,17 @@ class KemoraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => di.sl<PostViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<BadgeViewModel>()),
         ChangeNotifierProvider(create: (context) => di.sl<ChatViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<FavoriteViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<ReviewViewModel>()),
+        ChangeNotifierProvider(create: (context) => di.sl<NotificationViewModel>()),
         ChangeNotifierProvider(create: (context) => AppProvider()),
+        ChangeNotifierProvider(create: (context) => VoucherProvider()),
       ],
       child: MaterialApp(
         title: 'Kemora Travel Guide',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        // Using LoginScreen directly for initial development.
-        // GoRouter can be implemented later when adding bottom nav and other routes.
-        home: const LoginScreen(),
+        home: const AuthGate(),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

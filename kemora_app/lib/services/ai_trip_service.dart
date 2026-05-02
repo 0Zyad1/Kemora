@@ -111,7 +111,7 @@ class AiTripService {
       acts.add(
         Activity(
           time: "08:30 AM",
-          title: "Breakfast at ${destination} Delights",
+          title: "Breakfast at $destination Delights",
           description: "Famous for their falafel and coffee.",
           type: ActivityType.restaurant,
         ),
@@ -122,7 +122,7 @@ class AiTripService {
         acts.add(
           Activity(
             time: "10:00 AM",
-            title: "Historical Tour of ${destination}",
+            title: "Historical Tour of $destination",
             description: "Guided tour of ancient monuments.",
             type: ActivityType.sightseeing,
           ),
@@ -131,7 +131,7 @@ class AiTripService {
         acts.add(
           Activity(
             time: "10:00 AM",
-            title: "${destination} City Park",
+            title: "$destination City Park",
             description: "Refresh morning walk.",
             type: ActivityType.sightseeing,
           ),
@@ -172,8 +172,8 @@ class AiTripService {
     }
 
     String hotelName = budget == "Luxury"
-        ? "Grand ${destination} Hotel"
-        : "Cozy ${destination} Inn";
+        ? "Grand $destination Hotel"
+        : "Cozy $destination Inn";
 
     return TripPlan(
       destination: destination,
